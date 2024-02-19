@@ -1,37 +1,35 @@
 _G.love = require("love")
 
 local time
-
-local shader_files = {
-    "SAMPLE",
-    "lights",
-    "mandel",
-    "winter"
-}
+local shader_files = {}
 local current_shader = 1
 
-
+local function read_shaders()
+    for file in io.popen([[dir "shaders\" /b]]):lines() do table.insert(shader_files, file) end
+end
 
 function love.load()
     --love.window.setPosition( 900, 200, 1 )
     time = 0
-    Shader = love.graphics.newShader(shader_files[current_shader] .. ".glsl")
+    read_shaders()
+    Shader = love.graphics.newShader("shaders/" .. shader_files[current_shader])
     Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
+    
 end
  
- function love.update(dt)
+local function conditional_GPU_calls()
+    Shader:send("iTime",time)
+end
+
+function love.update(dt)
 	time = time + dt
 
-    if current_shader > 1 then 
-        Shader:send("iTime",time)
-    end
+    if pcall(conditional_GPU_calls) then  end
 end
 
 function love.draw()
     love.graphics.setShader(Shader)
-
 	love.graphics.rectangle("fill", 0, 0, SW, SH)
-	 
     love.graphics.setShader()
 end
 
