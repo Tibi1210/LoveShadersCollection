@@ -1,5 +1,7 @@
 _G.love = require("love")
 
+local fullscreen = true
+
 local time
 local shader_files = {}
 local current_shader = 1
@@ -12,6 +14,7 @@ function love.load()
     --love.window.setPosition( 900, 200, 1 )
     time = 0
     read_shaders()
+    love.window.setTitle(shader_files[current_shader]) 
     Shader = love.graphics.newShader("shaders/" .. shader_files[current_shader])
     Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
     
@@ -49,4 +52,18 @@ function love.keypressed(key)
         end
         love.load()
       end
+
+    if key == 'f' then
+        love.window.setFullscreen(fullscreen)
+        if not fullscreen then
+            SW = 1000
+            SH = 600
+            love.load()
+        else
+            SW = love.graphics.getWidth()
+            SH = love.graphics.getHeight()
+            love.load()
+        end
+        fullscreen = not fullscreen
+    end
 end
