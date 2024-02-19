@@ -7,7 +7,11 @@ local shader_files = {}
 local current_shader = 1
 
 local function read_shaders()
-    for file in io.popen([[dir "shaders\" /b]]):lines() do table.insert(shader_files, file) end
+    for file in io.popen([[dir "shaders\" /b]]):lines() do
+        if string.sub(file, -5, -1) == ".glsl" then
+            table.insert(shader_files, file) 
+        end        
+    end
 end
 
 function love.load()
@@ -17,17 +21,16 @@ function love.load()
     love.window.setTitle(shader_files[current_shader]) 
     Shader = love.graphics.newShader("shaders/" .. shader_files[current_shader])
     Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
-    
+
 end
  
-local function conditional_GPU_calls()
-    Shader:send("iTime",time)
-end
 
 function love.update(dt)
 	time = time + dt
 
-    if pcall(conditional_GPU_calls) then  end
+    if Shader:hasUniform("iTime") then
+        Shader:send("iTime",time)
+    end
 end
 
 function love.draw()
