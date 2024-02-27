@@ -5,38 +5,50 @@ local fullscreen = true
 local time
 local shader_files = {}
 local current_shader = 1
+local Shader = nil
 
 local function read_shaders()
     for file in io.popen([[dir "shaders\" /b]]):lines() do
         if string.sub(file, -5, -1) == ".glsl" then
-            table.insert(shader_files, file) 
-        end        
+            table.insert(shader_files, file)
+        end
     end
 end
 
+local function load_shader()
+    Shader = love.graphics.newShader("shaders/" .. shader_files[current_shader])
+end
+
 function love.load()
+    Shader = nil
     --love.window.setPosition( 900, 200, 1 )
     time = 0
     read_shaders()
-    love.window.setTitle(shader_files[current_shader]) 
-    Shader = love.graphics.newShader("shaders/" .. shader_files[current_shader])
-    Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
+    love.window.setTitle(shader_files[current_shader])
+
+    local load_status, load_err = pcall(load_shader)
+    if not load_status then
+        print(load_err .. "\n")
+    end
+
+    if Shader ~= nil and Shader:hasUniform("screen") then
+        Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
+    end
 
 end
- 
 
 function love.update(dt)
 	time = time + dt
 
-    if Shader:hasUniform("iTime") then
+    if Shader ~= nil and Shader:hasUniform("iTime") then
         Shader:send("iTime",time)
     end
 end
 
 function love.draw()
     love.graphics.setShader(Shader)
+    love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill", 0, 0, SW, SH)
-    love.graphics.setShader()
 end
 
 function love.keypressed(key)
