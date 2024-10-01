@@ -2,6 +2,10 @@ _G.love = require("love")
 
 local fullscreen = true
 
+local cell = 1
+local M_x = 0
+local M_y = 0
+
 local time
 local shader_files = {}
 local current_shader = 1
@@ -35,6 +39,15 @@ function love.load()
         Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
     end
 
+    if Shader ~= nil and Shader:hasUniform("cell") then
+        Shader:send("cell", cell)
+        print("Cell: " .. cell)
+    end
+
+    if Shader ~= nil and Shader:hasUniform("mouse_pos") then
+        Shader:send("mouse_pos",{M_x, M_y})
+    end
+
 end
 
 function love.update(dt)
@@ -42,6 +55,14 @@ function love.update(dt)
 
     if Shader ~= nil and Shader:hasUniform("iTime") then
         Shader:send("iTime",time)
+    end
+
+    if love.mouse.isDown(1) then
+        M_x, M_y = love.mouse.getPosition()
+        --print("X: " .. M_x .. " Y: " .. M_y)
+        if Shader ~= nil and Shader:hasUniform("mouse_pos") then
+            Shader:send("mouse_pos",{M_x, M_y})
+        end
     end
 end
 
@@ -81,4 +102,20 @@ function love.keypressed(key)
         end
         fullscreen = not fullscreen
     end
+
+    if key == '[' then
+        cell = math.abs(cell - 1)
+        if Shader ~= nil and Shader:hasUniform("cell") then
+            Shader:send("cell", cell)
+        end
+        print("Cell: " .. cell)
+    end
+    if key == ']' then
+        cell = math.abs(cell + 1)
+        if Shader ~= nil and Shader:hasUniform("cell") then
+            Shader:send("cell", cell)
+        end
+        print("Cell: " .. cell)
+    end
+
 end
