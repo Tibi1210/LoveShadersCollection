@@ -2,7 +2,6 @@ _G.love = require("love")
 
 local fullscreen = true
 
-local cell = 1
 local M_x = 0
 local M_y = 0
 
@@ -10,6 +9,7 @@ local time
 local shader_files = {}
 local current_shader = 1
 local Shader = nil
+local first_load = 0
 
 local function read_shaders()
     for file in io.popen([[dir "shaders\" /b]]):lines() do
@@ -20,6 +20,17 @@ local function read_shaders()
 end
 
 local function load_shader()
+    if first_load == 0 then   
+        file = io.open("save.txt", "r")
+        io.input(file)
+        local saveState = io.read()
+        io.close(file)
+        for key, value in pairs(shader_files) do
+            if value == saveState then
+                current_shader = key
+            end
+        end
+    end
     Shader = love.graphics.newShader("shaders/" .. shader_files[current_shader])
 end
 
@@ -28,26 +39,28 @@ function love.load()
     --love.window.setPosition( 900, 200, 1 )
     time = 0
     read_shaders()
-    love.window.setTitle(shader_files[current_shader])
-
+    
     local load_status, load_err = pcall(load_shader)
     if not load_status then
         print(load_err .. "\n")
     end
+    first_load = 1
+    love.window.setTitle(shader_files[current_shader])
 
     if Shader ~= nil and Shader:hasUniform("screen") then
         Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
     end
-
-    if Shader ~= nil and Shader:hasUniform("cell") then
-        Shader:send("cell", cell)
-        print("Cell: " .. cell)
+    
+    if Shader ~= nil and Shader:hasUniform("uNoise") then
+        local noiseTex = love.graphics.newImage("Assets/noise.png")
+        noiseTex:setWrap('repeat','repeat')
+        Shader:send("uNoise", noiseTex)
     end
+
 
     if Shader ~= nil and Shader:hasUniform("mouse_pos") then
         Shader:send("mouse_pos",{M_x, M_y})
     end
-
 end
 
 function love.update(dt)
@@ -74,11 +87,19 @@ end
 
 function love.keypressed(key)
     if key == 'escape' then
+        local file = io.open("save.txt", "w")
+        io.output(file)
+        io.write(shader_files[current_shader])
+        io.close(file)
         love.event.quit()
     end
 
     if key == 'r' then
-      love.event.quit("restart")
+        local file = io.open("save.txt", "w")
+        io.output(file)
+        io.write(shader_files[current_shader])
+        io.close(file)
+        love.event.quit("restart")
     end
 
     if key == 'space' then
@@ -101,21 +122,6 @@ function love.keypressed(key)
             love.load()
         end
         fullscreen = not fullscreen
-    end
-
-    if key == '[' then
-        cell = math.abs(cell - 1)
-        if Shader ~= nil and Shader:hasUniform("cell") then
-            Shader:send("cell", cell)
-        end
-        print("Cell: " .. cell)
-    end
-    if key == ']' then
-        cell = math.abs(cell + 1)
-        if Shader ~= nil and Shader:hasUniform("cell") then
-            Shader:send("cell", cell)
-        end
-        print("Cell: " .. cell)
     end
 
 end
