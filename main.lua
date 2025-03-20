@@ -10,6 +10,7 @@ local shader_files = {}
 local current_shader = 1
 local Shader = nil
 local first_load = 0
+local uframe = 0
 
 local function read_shaders()
     for file in io.popen([[dir "shaders\" /b]]):lines() do
@@ -52,9 +53,14 @@ function love.load()
     end
     
     if Shader ~= nil and Shader:hasUniform("uNoise") then
+        local blue_noiseTex = love.graphics.newImage("Assets/blue-noise.png")
         local noiseTex = love.graphics.newImage("Assets/noise.png")
+        blue_noiseTex:setWrap('repeat','repeat')
         noiseTex:setWrap('repeat','repeat')
+        noiseTex:setFilter("linear", "linear")
+        blue_noiseTex:setFilter("linear", "linear")
         Shader:send("uNoise", noiseTex)
+        Shader:send("uBlueNoise", blue_noiseTex)
     end
 
 
@@ -68,6 +74,11 @@ function love.update(dt)
 
     if Shader ~= nil and Shader:hasUniform("iTime") then
         Shader:send("iTime",time)
+    end
+    
+    if Shader ~= nil and Shader:hasUniform("uNoise") then
+        Shader:send("uFrame", uframe)
+        uframe = uframe + 1
     end
 
     if love.mouse.isDown(1) then
