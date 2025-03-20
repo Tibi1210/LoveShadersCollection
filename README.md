@@ -15,9 +15,10 @@ A collection of various GLSL shader projects throughout my journey of learning.
 
 ## Sources: 
 
-- Lights: [Link](https://www.youtube.com/watch?v=f4s1h2YETNY)
-- Mandelbrot: [Link](https://www.youtube.com/shorts/h5PuIm6fRr8)
-- Winter: [Link](https://www.youtube.com/watch?v=LLZPnh_LK8c)
+- Lights: [An introduction to Shader Art Coding](https://www.youtube.com/watch?v=f4s1h2YETNY)
+- Mandelbrot set: [Link](https://www.youtube.com/shorts/h5PuIm6fRr8)
+- Winter land: [Shader Coding: Over the Moon](https://www.youtube.com/watch?v=LLZPnh_LK8c)
+- Cloud: [Real-time dreamy Cloudscapes with Volumetric Raymarching](https://blog.maximeheckel.com/posts/real-time-cloudscapes-with-volumetric-raymarching/)
 
 #### Made and curated by: *Tibor Vajda*
 
