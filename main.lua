@@ -2,8 +2,8 @@ _G.love = require("love")
 
 local fullscreen = true
 
-local M_x = 0
-local M_y = 0
+local M_x = SW/2
+local M_y = SH/2
 
 local time
 local shader_files = {}
@@ -12,10 +12,14 @@ local Shader = nil
 local first_load = 0
 local uframe = 0
 
+local noise_type = 0
+
 local function read_shaders()
-    for file in io.popen([[dir "shaders\" /b]]):lines() do
-        if string.sub(file, -5, -1) == ".glsl" then
-            table.insert(shader_files, file)
+    for subdir in io.popen([[dir "shaders/" /b]]):lines() do
+        for file in io.popen('dir "shaders/' .. subdir .. '" /b'):lines() do
+            if string.sub(file, -5, -1) == ".glsl" then
+                table.insert(shader_files, subdir.."/"..file)
+            end
         end
     end
 end
@@ -48,6 +52,9 @@ function love.load()
     first_load = 1
     love.window.setTitle(shader_files[current_shader])
 
+    M_x = SW/2
+    M_y = SH/2
+
     if Shader ~= nil and Shader:hasUniform("screen") then
         Shader:send("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
     end
@@ -63,9 +70,17 @@ function love.load()
         Shader:send("uBlueNoise", blue_noiseTex)
     end
 
-
     if Shader ~= nil and Shader:hasUniform("mouse_pos") then
+        --print("X: " .. M_x .. " Y: " .. M_y)
         Shader:send("mouse_pos",{M_x, M_y})
+    end
+    
+    if Shader ~= nil and Shader:hasUniform("mouse_click") then
+        Shader:send("mouse_click", love.mouse.isDown(1))
+    end
+
+    if Shader ~= nil and Shader:hasUniform("noise_type") then
+        Shader:send("noise_type", noise_type)
     end
 end
 
@@ -76,17 +91,23 @@ function love.update(dt)
         Shader:send("iTime",time)
     end
     
-    if Shader ~= nil and Shader:hasUniform("uNoise") then
+    if Shader ~= nil and Shader:hasUniform("uFrame") then
         Shader:send("uFrame", uframe)
         uframe = uframe + 1
     end
 
-    if love.mouse.isDown(1) then
+    if Shader ~= nil and Shader:hasUniform("mouse_pos") and love.mouse.isDown(1) then
         M_x, M_y = love.mouse.getPosition()
         --print("X: " .. M_x .. " Y: " .. M_y)
-        if Shader ~= nil and Shader:hasUniform("mouse_pos") then
-            Shader:send("mouse_pos",{M_x, M_y})
-        end
+        Shader:send("mouse_pos",{M_x, M_y})
+    end
+
+    if Shader ~= nil and Shader:hasUniform("mouse_click") then
+        Shader:send("mouse_click", love.mouse.isDown(1))
+    end
+
+    if Shader ~= nil and Shader:hasUniform("noise_type") then
+        Shader:send("noise_type", noise_type)
     end
 end
 
@@ -133,6 +154,22 @@ function love.keypressed(key)
             love.load()
         end
         fullscreen = not fullscreen
+    end
+
+    if key == 'tab' then
+        if noise_type < 2 then
+            noise_type = noise_type + 1
+        else
+            noise_type = 0
+        end
+
+        if noise_type == 0 then
+            love.window.setTitle(shader_files[current_shader] .. " type: Perlin")
+        elseif noise_type == 1 then
+            love.window.setTitle(shader_files[current_shader] .. " type: Value")
+        else
+            love.window.setTitle(shader_files[current_shader] .. " type: Simplex")
+        end
     end
 
 end
