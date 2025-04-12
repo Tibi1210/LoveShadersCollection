@@ -5,8 +5,7 @@ local fullscreen = true
 local M_x = SW/2
 local M_y = SH/2
 
-local time
-local shader_files = {}
+local time = 0
 local current_shader = 1
 local Shader = nil
 local first_load = 0
@@ -15,28 +14,26 @@ local uframe = 0
 local noise_type = 0
 
 local function read_shaders()
-    for subdir in io.popen([[dir "shaders/" /b]]):lines() do
-        for file in io.popen('dir "shaders/' .. subdir .. '" /b'):lines() do
+    Shader_files = {}
+    for _, subdir in pairs(love.filesystem.getDirectoryItems("shaders/")) do
+        for _, file in pairs(love.filesystem.getDirectoryItems("shaders/"..subdir)) do
             if string.sub(file, -5, -1) == ".glsl" then
-                table.insert(shader_files, subdir.."/"..file)
+                table.insert(Shader_files, subdir.."/"..file)
             end
         end
     end
 end
 
 local function load_shader()
-    if first_load == 0 then   
-        file = io.open("save.txt", "r")
-        io.input(file)
-        local saveState = io.read()
-        io.close(file)
-        for key, value in pairs(shader_files) do
+    if first_load == 0 then
+        local saveState = love.filesystem.read("save.txt")
+        for key, value in pairs(Shader_files) do
             if value == saveState then
                 current_shader = key
             end
         end
     end
-    Shader = love.graphics.newShader("shaders/" .. shader_files[current_shader])
+    Shader = love.graphics.newShader("shaders/" .. Shader_files[current_shader])
 end
 
 function love.load()
@@ -50,7 +47,7 @@ function love.load()
         print(load_err .. "\n")
     end
     first_load = 1
-    love.window.setTitle(shader_files[current_shader])
+    love.window.setTitle(Shader_files[current_shader])
 
     M_x = SW/2
     M_y = SH/2
@@ -119,24 +116,18 @@ end
 
 function love.keypressed(key)
     if key == 'escape' then
-        local file = io.open("save.txt", "w")
-        io.output(file)
-        io.write(shader_files[current_shader])
-        io.close(file)
+        love.filesystem.write("save.txt", Shader_files[current_shader])
         love.event.quit()
     end
 
     if key == 'r' then
-        local file = io.open("save.txt", "w")
-        io.output(file)
-        io.write(shader_files[current_shader])
-        io.close(file)
+        love.filesystem.write("save.txt", Shader_files[current_shader])
         love.event.quit("restart")
     end
 
     if key == 'space' then
         current_shader = current_shader + 1
-        if current_shader > #shader_files then
+        if current_shader > #Shader_files then
             current_shader = 1
         end
         love.load()
@@ -157,19 +148,22 @@ function love.keypressed(key)
     end
 
     if key == 'tab' then
-        if noise_type < 2 then
-            noise_type = noise_type + 1
-        else
-            noise_type = 0
+        if Shader_files[current_shader] == "noise/noise_types.glsl" then
+            if noise_type < 2 then
+                noise_type = noise_type + 1
+            else
+                noise_type = 0
+            end
+
+            if noise_type == 0 then
+                love.window.setTitle(Shader_files[current_shader] .. " type: Perlin")
+            elseif noise_type == 1 then
+                love.window.setTitle(Shader_files[current_shader] .. " type: Value")
+            else
+                love.window.setTitle(Shader_files[current_shader] .. " type: Simplex")
+            end
         end
 
-        if noise_type == 0 then
-            love.window.setTitle(shader_files[current_shader] .. " type: Perlin")
-        elseif noise_type == 1 then
-            love.window.setTitle(shader_files[current_shader] .. " type: Value")
-        else
-            love.window.setTitle(shader_files[current_shader] .. " type: Simplex")
-        end
     end
 
 end

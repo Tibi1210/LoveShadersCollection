@@ -1,9 +1,10 @@
-
 SW = 1000
 SH = 600
 
+Shader_files = {}
+
 function love.conf(t)
-    t.window.title = "ShaderToy"
+    t.window.title = "LoveShaders"
 
     t.window.height = SH
     t.window.width = SW
@@ -15,7 +16,7 @@ function love.conf(t)
 
     t.window.fullscreen = false
     t.window.fullscreentype = "desktop"
-    t.window.vsync = 0                  
-    t.window.msaa = 0                   
+    t.window.vsync = 0
+    t.window.msaa = 0
 
 end
