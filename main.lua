@@ -10,6 +10,7 @@ local current_shader = 1
 local Shader = nil
 local first_load = 0
 local uframe = 0
+local mousewheel = 1
 
 local noise_type = 0
 
@@ -79,6 +80,8 @@ function love.load()
     if Shader ~= nil and Shader:hasUniform("noise_type") then
         Shader:send("noise_type", noise_type)
     end
+
+    love.keyboard.setKeyRepeat(true)
 end
 
 function love.update(dt)
@@ -106,12 +109,31 @@ function love.update(dt)
     if Shader ~= nil and Shader:hasUniform("noise_type") then
         Shader:send("noise_type", noise_type)
     end
+
+    if Shader ~= nil and Shader:hasUniform("mouse_wheel") then
+        Shader:send("mouse_wheel", mousewheel)
+    end
 end
 
 function love.draw()
     love.graphics.setShader(Shader)
     love.graphics.setColor(0,0,0)
-	love.graphics.rectangle("fill", 0, 0, SW, SH)
+    if Shader_files[current_shader] == "noise/planet.glsl" then
+        love.graphics.circle("fill", SW/2,SH/2, 100, 100)
+    else
+        love.graphics.rectangle("fill", 0, 0, SW, SH)
+    end
+end
+
+function love.wheelmoved(x, y)
+    if y > 0 then
+        mousewheel = mousewheel - 1
+        if mousewheel < 2 then
+            mousewheel = 1
+        end
+    elseif y < 0 then
+        mousewheel = mousewheel + 1
+    end
 end
 
 function love.keypressed(key)
