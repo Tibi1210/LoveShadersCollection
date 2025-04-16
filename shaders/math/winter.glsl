@@ -1,5 +1,5 @@
-extern number iTime;
-extern vec2 screen;
+extern number _Time;
+extern vec2 _ScreenSize;
 
 #define S(a, b, t) smoothstep(a, b, t)
 
@@ -28,8 +28,6 @@ vec4 Tree(vec2 uv, vec3 col, float blur){
     shadow += TaperBox(uv - vec2(0.2,0), 0.1, 0.5, 0.7, 0.75, blur);
 
     col -= shadow * 0.8;
-
-
     return vec4(col, m);
 }
 
@@ -39,38 +37,27 @@ float getHeight(float x){
 
 vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ){
 
-    //center (0,0) with scaling
-    vec2 uv = (screen_coords * 2.0 - screen) / screen.y;
+    vec2 uv = (screen_coords * 2.0 - _ScreenSize) / _ScreenSize.y;
     uv.y = uv.y * -1.0;
-    //uv.y += 1; // shift x to bottom of screen
-    uv.x += iTime*0.1;
+    uv.x += _Time * 0.1;
     uv *= 4; // zoom out
-
-    //coordinates
-    //float thickness = 1.01/screen.y;
-    //if(abs(uv.x)<thickness){
-    //    finalColor.r = 1.0;
-    //}
-    //if(abs(uv.y)<thickness){
-    //    finalColor.g = 1.0;
-    //}
 
     vec4 finalColor = vec4(0.0);
     float blur = 0.005;
 
     float id = floor(uv.x);
-    float n = fract(sin(id*234.12)*5438.3) * 2.0 - 1.0;
+    float n = fract(sin(id * 234.12) * 5438.3) * 2.0 - 1.0;
 
     vec2 transform = vec2(n * 0.3, getHeight(uv.x));
-    vec2 scale = vec2(1,1.0 + n * 0.2);
+    vec2 scale = vec2(1.0, 1.0 + n * 0.2);
 
-    uv.x = fract(uv.x)-0.5;
+    uv.x = fract(uv.x) - 0.5;
 
     finalColor += S(blur, -blur, uv.y + transform.y); // ground
 
     transform.y = getHeight(id + 0.5 + transform.x) * -1.0;
     
-    vec4 tree = Tree((uv - transform) * scale , vec3(1), blur);
+    vec4 tree = Tree((uv - transform) * scale , vec3(1.0), blur);
 
     finalColor = mix(finalColor, tree, tree.a);
 

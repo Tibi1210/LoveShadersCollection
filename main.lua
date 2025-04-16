@@ -1,6 +1,6 @@
 local is_fullscreen = true
-local M_x = SW/2
-local M_y = SH/2
+local M_x = SW / 2
+local M_y = SH / 2
 local time = 0
 local current_shader = 1
 local first_load = 0
@@ -11,9 +11,9 @@ local noise_type = 0
 local function read_shaders()
     Shader_files = {}
     for _, subdir in pairs(love.filesystem.getDirectoryItems("shaders/")) do
-        for _, file in pairs(love.filesystem.getDirectoryItems("shaders/"..subdir)) do
+        for _, file in pairs(love.filesystem.getDirectoryItems("shaders/" .. subdir)) do
             if string.sub(file, -5, -1) == ".glsl" then
-                table.insert(Shader_files, subdir.."/"..file)
+                table.insert(Shader_files, subdir .. "/" .. file)
             end
         end
     end
@@ -32,11 +32,10 @@ local function load_shader()
 end
 
 function love.load()
-
     --love.window.setPosition( 900, 200, 1 )
     time = 0
     read_shaders()
-    
+
     local load_status, load_err = pcall(load_shader)
     if not load_status then
         print(load_err .. "\n")
@@ -44,45 +43,44 @@ function love.load()
     first_load = 1
     love.window.setTitle(Shader_files[current_shader])
 
-    M_x = SW/2
-    M_y = SH/2
+    M_x = SW / 2
+    M_y = SH / 2
 
-    Shader.SetVector2("screen", {love.graphics.getWidth(), love.graphics.getHeight()})
-    Shader.SetTexture2D("uNoise", "Assets/noise.png")
-    Shader.SetTexture2D("uBlueNoise", "Assets/blue-noise.png")
-    Shader.SetVector2("mouse_pos", {M_x, M_y})
+    Shader.SetVector2("_ScreenSize", { love.graphics.getWidth(), love.graphics.getHeight() })
+    Shader.SetTexture2D("_Noise", "Assets/noise.png")
+    Shader.SetTexture2D("_BlueNoise", "Assets/blue-noise.png")
+    Shader.SetVector2("_MousePos", { M_x, M_y })
 
     love.keyboard.setKeyRepeat(true)
 end
 
 function love.update(dt)
-	time = time + dt
+    time = time + dt
 
 
-    Shader.SetFloat("iTime",time)
-    Shader.SetFloat("uFrame",uframe)
+    Shader.SetFloat("_Time", time)
+    Shader.SetFloat("_Uframe", uframe)
     uframe = uframe + 1
     if love.mouse.isDown(1) then
         M_x, M_y = love.mouse.getPosition()
-        Shader.SetVector2("mouse_pos", {M_x, M_y})
+        Shader.SetVector2("_MousePos", { M_x, M_y })
     end
-    Shader.SetBoolean("mouse_click", love.mouse.isDown(1))
-    Shader.SetInteger("mouse_wheel", mousewheel)
-    Shader.SetInteger("noise_type", noise_type)
-
+    Shader.SetBoolean("_MouseClick", love.mouse.isDown(1))
+    Shader.SetInteger("_MouseWheel", mousewheel)
+    Shader.SetInteger("_NoiseType", noise_type)
 end
 
 function love.draw()
     love.graphics.setShader(Shader.Get())
-    love.graphics.setColor(0,0,0)
+    love.graphics.setColor(0, 0, 0)
     if Shader_files[current_shader] == "noise/planet.glsl" then
-        love.graphics.circle("fill", SW/2,SH/2, SW/4,SH/4)
+        love.graphics.circle("fill", SW / 2, SH / 2, SW / 4, SH / 4)
     else
         love.graphics.rectangle("fill", 0, 0, SW, SH)
     end
 end
 
-function love.wheelmoved(x, y)
+function love.wheelmoved(_, y)
     if y > 0 then
         mousewheel = mousewheel - 1
         if mousewheel < 2 then
@@ -110,7 +108,7 @@ function love.keypressed(key)
             current_shader = 1
         end
         love.load()
-      end
+    end
 
     if key == 'f' then
         love.window.setFullscreen(is_fullscreen)
@@ -142,7 +140,5 @@ function love.keypressed(key)
                 love.window.setTitle(Shader_files[current_shader] .. " type: Simplex")
             end
         end
-
     end
-
 end

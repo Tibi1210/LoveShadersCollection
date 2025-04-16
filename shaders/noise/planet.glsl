@@ -1,13 +1,13 @@
-extern vec2 screen;
-extern vec2 mouse_pos;
-extern float mouse_wheel;
+extern vec2 _ScreenSize;
+extern vec2 _MousePos;
+extern float _MouseWheel;
 
-#define MOD3 vec3(.1031,.11369,.13787)
+#define MOD3 vec3(0.1031, 0.11369, 0.13787)
 
 vec3 hash33(vec3 p3){
 	p3 = fract(p3 * MOD3);
-    p3 += dot(p3, p3.yxz+19.19);
-    return -1.0 + 2.0 * fract(vec3((p3.x + p3.y)*p3.z, (p3.x+p3.z)*p3.y, (p3.y+p3.z)*p3.x));
+    p3 += dot(p3, p3.yxz + 19.19);
+    return -1.0 + 2.0 * fract(vec3((p3.x + p3.y) * p3.z, (p3.x+p3.z) * p3.y, (p3.y+p3.z) * p3.x));
 }
 
 float perlin_noise(vec3 p){
@@ -42,7 +42,7 @@ vec3 palette(float t) {
     vec3 c = vec3(1.0, 0.7, 1.0);
     vec3 d = vec3(0.00, 0.5, 0.5);
 
-    return a + b*cos( 6.28318*(c*t+d));
+    return a + b * cos(6.28318 * (c * t + d));
 }
 
 #define PI 3.14159265358979323846
@@ -52,15 +52,14 @@ float rad(int angle){
 
 mat2 direction(float angle){
     return mat2(normalize(vec2(cos(angle),sin(angle))),
-                    normalize(vec2(-sin(angle),cos(angle))));
+                normalize(vec2(-sin(angle),cos(angle))));
 }  
 
 #define NUM_OCTAVES 5
 
 vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ){
 
-    //center (0,0) with scaling
-    vec2 uv = (screen_coords * 2.0 - screen) / screen.y;
+    vec2 uv = (screen_coords * 2.0 - _ScreenSize) / _ScreenSize.y;
     uv.y = uv.y * -1.0;
 
     float shift[NUM_OCTAVES];
@@ -94,19 +93,19 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     float total = 0.0;
     float amplitude = 1.0;
 
-    uv.x -= mouse_pos.x * 0.05;
-    uv.y += mouse_pos.y * 0.05;
-    uv *= mouse_wheel * 0.1;
+    uv.x -= _MousePos.x * 0.05;
+    uv.y += _MousePos.y * 0.05;
+    uv *= _MouseWheel * 0.1;
 
     for (int i = 0; i < NUM_OCTAVES; ++i) {
         uv = (direction(rad(rotation[i])) * uv) * frequency[i] + shift[i];
         amplitude *= persistence[i];
-        total += amplitude * perlin_noise(vec3(abs(uv),1.0));
+        total += amplitude * perlin_noise(vec3(abs(uv), 1.0));
     }
 
-    vec3 blu = vec3(0.0,0.0,0.2);
-    vec3 gren = vec3(0.0,0.7,0.0);
-    vec4 fragColor = vec4(mix(blu,gren, total), 1.0);
+    vec3 blu = vec3(0.0, 0.0, 0.2);
+    vec3 gren = vec3(0.0, 0.7, 0.0);
+    vec4 fragColor = vec4(mix(blu, gren, total), 1.0);
 
     return fragColor;
 }

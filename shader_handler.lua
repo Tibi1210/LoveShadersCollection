@@ -1,4 +1,4 @@
-local shader_handler =  {}
+local shader_handler = {}
 
 local shader_instance = nil
 
@@ -35,7 +35,7 @@ function shader_handler.SetVector2(uniform, vec2)
         if #vec2 == 2 then
             shader_instance:send(uniform, vec2)
         else
-            error("Shader uniform Vector2 expected, got Vector"..#vec2)
+            error("Shader uniform Vector2 expected, got Vector" .. #vec2)
         end
     end
 end
@@ -45,7 +45,7 @@ function shader_handler.SetTexture2D(uniform, image, wrap, filter)
     filter = filter or 'linear'
     if shader_instance ~= nil and shader_instance:hasUniform(uniform) then
         local tex = love.graphics.newImage(image)
-        tex:setWrap(wrap,wrap)
+        tex:setWrap(wrap, wrap)
         tex:setFilter(filter, filter)
         shader_instance:send(uniform, tex)
     end

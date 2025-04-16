@@ -1,8 +1,8 @@
-extern number iTime;
-extern number uFrame;
-extern vec2 screen;
-extern sampler2D uNoise;
-extern sampler2D uBlueNoise;
+extern number _Time;
+extern number _Uframe;
+extern vec2 _ScreenSize;
+extern sampler2D _Noise;
+extern sampler2D _BlueNoise;
 
 #define MAX_STEPS 60
 #define MAX_STEPS_LIGHTS 6
@@ -26,16 +26,16 @@ float HenyeyGreenstein(float g, float mu) {
 float noise( in vec3 x ) {
     vec3 p = floor(x);
     vec3 f = fract(x);
-    f = f*f*(3.0-2.0*f);
+    f = f * f * (3.0 - 2.0 * f);
 
-    vec2 uv = (p.xy+vec2(37.0,239.0)*p.z) + f.xy;
-    vec2 tex = texture2D(uNoise,(uv+0.5)/256.0).yx;
+    vec2 uv = (p.xy + vec2(37.0, 239.0) * p.z) + f.xy;
+    vec2 tex = texture2D(_Noise,(uv + 0.5) / 256.0).yx;
 
     return mix(tex.x, tex.y, f.z) * 2.0 ;
 }
 
 float fbm(vec3 p, bool lowRes) {
-    vec3 q = p + iTime * 0.5 * vec3(1.0, -0.2, -1.0);
+    vec3 q = p + _Time * 0.5 * vec3(1.0, -0.2, -1.0);
     float g = noise(q);
 
     float f = 0.0;
@@ -60,9 +60,7 @@ float fbm(vec3 p, bool lowRes) {
 
 float scene(vec3 p, bool lowRes) {
     float distance = sdSphere(p, 1.2);
-
     float f = fbm(p, lowRes);
-
     return -distance + f;
 }
 
@@ -77,7 +75,7 @@ float lightmarch(vec3 position, vec3 rayDirection) {
     for (int step = 0; step < MAX_STEPS_LIGHTS; step++) {
         position += sunDirection * marchSize * float(step);
 
-        float lightSample = scene(position, true);
+        float lightSample = scene(position, false);
         totalDensity += lightSample;
     }
 
@@ -117,8 +115,7 @@ float raymarch(vec3 rayOrigin, vec3 rayDirection, float offset) {
 
 vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ){
 
-    //center (0,0) with scaling
-    vec2 uv = (screen_coords * 2.0 - screen) / screen.y;
+    vec2 uv = (screen_coords * 2.0 - _ScreenSize) / _ScreenSize.y;
     uv.y = uv.y * -1.0;
 
     // Ray Origin - camera
@@ -129,16 +126,16 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     vec3 finalColor = vec3(0.0);
 
     // Sun and Sky
-    vec3 sunColor = vec3(1.0,0.5,0.3);
+    vec3 sunColor = vec3(1.0, 0.5, 0.3);
     vec3 sunDirection = normalize(SUN_POSITION);
     float sun = clamp(dot(sunDirection, rd), 0.0, 1.0);
     // Base sky color
-    finalColor = vec3(0.7,0.7,0.90);
+    finalColor = vec3(0.7, 0.7, 0.90);
     // Add vertical gradient
-    finalColor -= 0.8 * vec3(0.90,0.75,0.90) * rd.y;
+    finalColor -= 0.8 * vec3(0.90, 0.75, 0.90) * rd.y;
 
-    float blueNoise = texture2D(uBlueNoise, gl_FragCoord.xy / 1024.0).r;
-    float offset = fract(blueNoise + float(mod(uFrame, 32)) / sqrt(0.5));
+    float blueNoise = texture2D(_BlueNoise, gl_FragCoord.xy / 1024.0).r;
+    float offset = fract(blueNoise + float(mod(_Uframe, 32)) / sqrt(0.5));
 
     // Cloud
     float res = raymarch(ro, rd, offset);

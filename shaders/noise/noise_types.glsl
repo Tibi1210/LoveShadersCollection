@@ -1,25 +1,13 @@
-extern number iTime;
-extern vec2 screen;
-extern vec2 mouse_pos;
-extern int noise_type;
+extern number _Time;
+extern vec2 _ScreenSize;
+extern vec2 _MousePos;
+extern int _NoiseType;
 
 #define SPEED 0.05
 
 // ========= Hash ===========
-vec3 hashOld33(vec3 p){   
-	p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
-			  dot(p,vec3(269.5,183.3,246.1)),
-			  dot(p,vec3(113.5,271.9,124.6)));
-    return -1.0 + 2.0 * fract(sin(p)*43758.5453123);
-}
-
-float hashOld31(vec3 p){
-    float h = dot(p,vec3(127.1,311.7, 74.7));
-    return -1.0 + 2.0 * fract(sin(h)*43758.5453123);
-}
-
 // Grab from https://www.shadertoy.com/view/4djSRW
-#define MOD3 vec3(.1031,.11369,.13787)
+#define MOD3 vec3(0.1031, 0.11369, 0.13787)
 //#define MOD3 vec3(443.8975,397.2973, 491.1871)
 float hash31(vec3 p3){
 	p3  = fract(p3 * MOD3);
@@ -28,9 +16,9 @@ float hash31(vec3 p3){
 }
 
 vec3 hash33(vec3 p3){
-	p3 = fract(p3 * MOD3);
-    p3 += dot(p3, p3.yxz+19.19);
-    return -1.0 + 2.0 * fract(vec3((p3.x + p3.y)*p3.z, (p3.x+p3.z)*p3.y, (p3.y+p3.z)*p3.x));
+	p3  = fract(p3 * MOD3);
+    p3 += dot(p3, p3.yxz + 19.19);
+    return -1.0 + 2.0 * fract(vec3((p3.x + p3.y) * p3.z, (p3.x + p3.z) * p3.y, (p3.y + p3.z) * p3.x));
 }
 
 // ========= Noise ===========
@@ -86,7 +74,7 @@ float simplex_noise(vec3 p){
     vec3 i = floor(p + (p.x + p.y + p.z) * K1);
     vec3 d0 = p - (i - (i.x + i.y + i.z) * K2);
     
-    // thx nikita: https://www.shadertoy.com/view/XsX3zB
+    //https://www.shadertoy.com/view/XsX3zB
     vec3 e = step(vec3(0.0), d0 - d0.yzx);
 	vec3 i1 = e * (1.0 - e.zxy);
 	vec3 i2 = 1.0 - e.zxy * (1.0 - e);
@@ -102,20 +90,19 @@ float simplex_noise(vec3 p){
 }
 
 float noise(vec3 p){
-    if(noise_type == 0){
+    if(_NoiseType == 0){
         return perlin_noise(p * 2.0);
     }
-    if(noise_type == 1){
+    if(_NoiseType == 1){
         return value_noise(p * 2.0);
     }
-    if(noise_type == 2){
+    if(_NoiseType == 2){
         return simplex_noise(p);
     }
     return 0.0;
 }
 
 // ========== Different function ==========
-
 float noise_itself(vec3 p){
     return noise(p * 8.0);
 }
@@ -150,7 +137,7 @@ float noise_sum_abs_sin(vec3 p){
 
 vec3 getBackground(vec2 uv, vec2 split)
 {
-    vec3 pos = vec3(uv, iTime * SPEED);
+    vec3 pos = vec3(uv, _Time * SPEED);
     float f;
     if (uv.x < split.x && uv.y > split.y) {
         f = noise_itself(pos);
@@ -165,22 +152,13 @@ vec3 getBackground(vec2 uv, vec2 split)
     return vec3(f * 0.5 + 0.5);
 }
 
-
-
-
-
 vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ){
 
-    //center (0,0) with scaling
-    vec2 uv = (screen_coords * 2.0 - screen) / screen.y;
-    vec2 mouse = (mouse_pos * 2.0 - screen) / screen.y;
+    vec2 uv = (screen_coords * 2.0 - _ScreenSize) / _ScreenSize.y;
+    vec2 mouse = (_MousePos * 2.0 - _ScreenSize) / _ScreenSize.y;
     uv.y = uv.y * -1.0;
     mouse.y = mouse.y * -1.0;
 
     return vec4(getBackground(uv,mouse), 1.0);
 
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
