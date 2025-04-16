@@ -25,6 +25,8 @@ A collection of various shader projects throughout my journey of learning.
 - Perlin noise: [ShaderToy](https://www.shadertoy.com/view/MtcGRl)
 - Noise cloud art: [The Book of Shaders](https://thebookofshaders.com/13/)
 - Noise types: [ShaderToy](https://www.shadertoy.com/view/4sc3z2)
+- Point Based Global Illumination: [ShaderToy](https://www.shadertoy.com/view/MsXSzn)
+- Normal calculation: [ShaderToy](https://www.shadertoy.com/view/3sSSW1)
 
 #### Made and curated by: *Tibor Vajda*
 
