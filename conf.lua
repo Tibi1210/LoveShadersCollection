@@ -2,8 +2,8 @@ _G.love = require("love")
 
 Shader = require("shader_handler")
 
-SW = 1000
-SH = 600
+SW = 1200
+SH = 675
 
 Shader_files = {}
 

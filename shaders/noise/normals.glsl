@@ -69,7 +69,7 @@ vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords 
     if(screen_coords.x > mouseSplit){
         fragColor = vec4(normal, 1.0, 1.0);
     }else{
-        fragColor = vec4(noiseVal, 0.0, 0.0, 1.0);
+        fragColor = vec4(noiseVal, noiseVal, noiseVal, 1.0);
     }
 
     return fragColor;

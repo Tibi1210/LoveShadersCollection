@@ -113,8 +113,8 @@ function love.keypressed(key)
     if key == 'f' then
         love.window.setFullscreen(is_fullscreen)
         if not is_fullscreen then
-            SW = 1000
-            SH = 600
+            SW = 1200
+            SH = 675
             love.load()
         else
             SW = love.graphics.getWidth()
